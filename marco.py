@@ -86,13 +86,17 @@ class SubsetSolver:
 
    def c_var(self, i):
        if i not in self.varcache:
-          v = Bool(str(self.constraints[abs(i)]))
+          v = Bool(str(abs(i)))
+#          v = Bool(str(self.constraints[abs(i)]))
           self.idcache[get_id(v)] = abs(i)
           if i >= 0:
              self.varcache[i] = v
           else:
              self.varcache[i] = Not(v)
        return self.varcache[i]
+
+   def get_lit_constraint_map(self):
+        return dict({(self.c_var(i), self.constraints[i]) for i in range(self.n)})
 
    def check_subset(self, seed):
        assumptions = self.to_c_lits(seed)
