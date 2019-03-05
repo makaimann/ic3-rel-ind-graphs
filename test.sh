@@ -1,11 +1,13 @@
 #!/bin/bash
 
+TO=120
+
 for aig in `ls ./hwmcc17/*`; do
     rm -f inv.cnf trans.cnf
     filename=$(basename -- $aig)
     filename="${filename%.*}"
     echo "Running IC3Ref on $aig"
-    res=`timeout 120 ./IC3 -v --trans=trans.cnf --inv=inv.cnf < $aig | tail -c 2`
+    res=`timeout $TO ./IC3 -v --trans=trans.cnf --inv=inv.cnf < $aig | tail -c 2`
     if [ -z "${res// }" ]; then
         echo "timed out"
     elif [ "$res" -eq 0 ]; then
