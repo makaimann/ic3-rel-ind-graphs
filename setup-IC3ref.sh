@@ -14,3 +14,6 @@ wget http://fmv.jku.at/aiger/aiger-1.9.4.tar.gz
 tar -xzvf aiger-1.9.4.tar.gz
 mv aiger-1.9.4/ aiger/
 make
+
+cd ../
+ln -s ./IC3ref/IC3 ./IC3
