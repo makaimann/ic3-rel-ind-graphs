@@ -81,7 +81,7 @@ def check_single_inv_induction(solver, inv, npinv):
     solver.add(inv)
     solver.add(npinv)
     # returns true if it IS inductive
-    res = str(solver.check()) == "unsat"
+    res = solver.check() == unsat
     solver.pop()
     return res
 
@@ -173,13 +173,17 @@ def main():
             continue
         else:
             visited.add(inv)
-            invdeps = get_deps(constraints, Not(pinv._expr))
+            npinv = Not(pinv._expr)
+            if check_single_inv_induction(ind_solver, inv._expr, npinv):
+                invdeps = [inv]
+            else:
+                invdeps = get_deps(constraints, npinv)
 #            print("invdeps", [i._id for i in invdeps])
             for i in invdeps:
                 if i != clause_trans:
                     to_visit.appendleft(i)
             deps[inv] = invdeps
-            count += 1
+        count += 1
 
     print('\nBuilding graph...')
     dot = Digraph(comment="Induction Graph")
