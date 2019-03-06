@@ -39,17 +39,14 @@ def check_single_inv_induction(solver, inv, npinv):
     solver.pop()
     return res
 
-def debug_printing(pinv2inv, trans, prop, include_mapping=True):
+def debug_printing(inv2pinv, trans, prop, include_mapping=True):
     print('+++++++++++++++++++++++ debug printing +++++++++++++++++++++++++++')
     print('trans id =', trans._id)
     print('prop id =', prop._id)
     print('inv --> primed inv')
     if include_mapping:
-        for pinv, inv in pinv2inv.items():
+        for inv, pinv in inv2pinv.items():
             print("{} --> {}".format(inv._id, pinv._id))
-    # print('----------------mucs------------------')
-    # for oinv, deps in mucs:
-    #     print("{}: {}".format(oinv._id, [d._id for d in deps]))
     print('+++++++++++++++++++++ end debug printing +++++++++++++++++++++++++')
 
 def main():
@@ -78,20 +75,15 @@ def main():
     # we don't want to remove that, so take it out now and add it back afterwards
     prop = inv_cand[0]
     primeprop = inv_primed_cand[0]
-    pinv2inv = identify_invariants(trans, inv_cand[1:], inv_primed_cand[1:])
-    pinv2inv[primeprop] = prop
+    inv2pinv = identify_invariants(trans, inv_cand[1:], inv_primed_cand[1:])
+    inv2pinv[prop] = primeprop
 
-    if len(pinv2inv) == 1:
+    if len(inv2pinv) == 1:
         print("Zero invariants (other than property), aborting")
         sys.exit(0)
 
-    invs = pinv2inv.values()
-    pinvs = pinv2inv.keys()
-
-    # look up the other way
-    inv2pinv = {}
-    for k, v in pinv2inv.items():
-        inv2pinv[v] = k
+    invs = inv2pinv.keys()
+    pinvs = inv2pinv.values()
 
     print("Finding dependencies...")
 
@@ -105,7 +97,7 @@ def main():
     ind_solver = Solver()
     ind_solver.add(z3trans)
 
-#    debug_printing(pinv2inv, clause_trans, prop, include_mapping=False)
+#    debug_printing(inv2pinv, clause_trans, prop, include_mapping=False)
 
     deps = {}
     to_visit = deque([prop])

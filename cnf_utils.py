@@ -79,32 +79,33 @@ def assert_clauses(slv:Solver, clauses:Sequence[Clause]):
     slv.add(And([c._expr for c in clauses]))
 
 
-def check_inductiveness(slv:Solver, pinv2inv:Dict[Clause, Clause])->bool:
+def check_inductiveness(slv:Solver, inv2pinv:Dict[Clause, Clause])->bool:
     # assumes trans has already been added to solver
     slv.push()
-    assert_clauses(slv, pinv2inv.values())
-    slv.add(Not(And([c._expr for c in pinv2inv.keys()])))
+    assert_clauses(slv, inv2pinv.keys())
+    slv.add(Not(And([c._expr for c in inv2pinv.values()])))
     # it's inductive if check is unsat
     res = str(slv.check()) == "unsat"
     slv.pop()
     return res
 
 def identify_invariants(trans:List[Clause], inv_cand:List[Clause], inv_primed_cand:List[Clause]):
-    pinv2inv = dict(zip(inv_primed_cand, inv_cand))
+    inv2pinv = dict(zip(inv_cand, inv_primed_cand))
     slv = Solver()
     assert_clauses(slv, trans)
     print("Checking {} candidate invariants...".format(len(inv_cand)))
 
-    while not check_inductiveness(slv, pinv2inv):
+    while not check_inductiveness(slv, inv2pinv):
         slv.push()
-        assert_clauses(slv, pinv2inv.values())
-        for ipc in [p for p in pinv2inv.keys()]:
+        assert_clauses(slv, inv2pinv.keys())
+        for ic in [i for i in inv2pinv.keys()]:
             slv.push()
+            ipc = inv2pinv[ic]
             slv.add(Not(ipc._expr))
             if str(slv.check()) == "sat":
                 # not an invariant
-                del pinv2inv[ipc]
+                del inv2pinv[ic]
             slv.pop()
         slv.pop()
-    print("Found {} invariants".format(len(pinv2inv)))
-    return pinv2inv
+    print("Found {} invariants".format(len(inv2pinv)))
+    return inv2pinv
