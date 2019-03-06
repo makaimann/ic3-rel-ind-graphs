@@ -72,15 +72,18 @@ def get_id(x):
 
 
 class SubsetSolver:
-   constraints = []
-   n = 0
-   s = Solver()
-   varcache = {}
-   idcache = {}
+   # constraints = []
+   # n = 0
+   # s = Solver()
+   # varcache = {}
+   # idcache = {}
 
    def __init__(self, constraints):
        self.constraints = constraints
        self.n = len(constraints)
+       self.s = Solver()
+       self.varcache = {}
+       self.idcache = {}
        for i in range(self.n):
            self.s.add(Implies(self.c_var(i), constraints[i]))
 
