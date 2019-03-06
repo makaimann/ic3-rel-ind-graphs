@@ -161,6 +161,7 @@ def main():
     while to_visit:
         if count % 20 == 0:
             print('#', end='')
+            sys.stdout.flush()
 
         inv = to_visit.pop()
         pinv = inv2pinv[inv]
