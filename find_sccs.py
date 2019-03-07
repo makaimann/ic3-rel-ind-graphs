@@ -129,14 +129,15 @@ if __name__ == "__main__":
         for scc in sccs:
             hist[len(scc)] += 1
 
-        length, freq = zip(*hist.items())
+        length, freq = zip(*sorted(hist.items()))
         length = list(map(int, length))
         freq = list(map(int, freq))
-        plt.bar(length, freq, align='center')
-        plt.xticks(sorted(length))
+        x_pos = list(range(len(length)))
+        plt.bar(x_pos, freq, align='center')
+        plt.xticks(x_pos, length)
         plt.xlabel('Size of SCC')
         plt.ylabel('Number of SCCs')
-        plt.title('Frequence of SCC sizes')
+        plt.title('Occurrences of SCC sizes')
         plt.show()
 
     #This code is contributed by Neelam Yadav
