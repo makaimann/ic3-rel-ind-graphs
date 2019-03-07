@@ -5,6 +5,7 @@ from collections import deque
 from graphviz import Digraph
 from itertools import chain
 from marco import SubsetSolver, MapSolver, enumerate_sets
+import pickle
 import sys
 from z3 import Solver, Not, And, sat, unsat, Implies, Bool
 
@@ -111,16 +112,26 @@ def main():
     parser.add_argument('-o', dest='outname',
                         metavar='<OUTPUT_FILE>',
                         help='Filename to write the graphviz graph to.')
+    parser.add_argument('--pickle', dest='gen_pickle', action="store_true",
+                        help='Generate a pickle file of the edges.')
+    parser.add_argument('--noprop', dest='noprop', action="store_true",
+                        help='Don\'t include prop in invariants')
     args = parser.parse_args()
     trans = read_cnf(args.trans_filename)
     inv_cand = read_cnf(args.invcand_filename)
     inv_primed_cand = read_cnf(args.invprime_cand_filename)
     outname = args.outname
+    gen_pickle = args.gen_pickle
+    noprop = args.noprop
 
     # the first invariant is assumed to be the property
     # we don't want to remove that, so take it out now and add it back afterwards
     prop = inv_cand[0]
     primeprop = inv_primed_cand[0]
+
+    if noprop:
+        inv_cand = inv_cand[1:]
+        inv_primed_cand = inv_primed_cand[1:]
 
     z3trans = And([c._expr for c in trans])
     clause_trans = Clause(z3trans)
@@ -138,7 +149,9 @@ def main():
     # end sanity check
 
     inv2pinv = identify_invariants(trans, inv_cand, inv_primed_cand)
-    assert prop in inv2pinv
+
+    if not noprop:
+        assert prop in inv2pinv
 
     invs = inv2pinv.keys()
     pinvs = inv2pinv.values()
@@ -152,73 +165,105 @@ def main():
     ind_solver = Solver()
     ind_solver.add(z3trans)
 
-#    debug_printing(inv2pinv, clause_trans, prop, include_mapping=False)
-
+#    debug_printing(inv2pinv, clause_trans, prop, include_mapping=True)
     deps = {}
-    to_visit = deque([prop])
-    visited = set()
-    count = 0
-    while to_visit:
-        if count % 20 == 0:
-            print('#', end='')
-            sys.stdout.flush()
-
-        inv = to_visit.pop()
-        pinv = inv2pinv[inv]
-
-#        print('visiting', inv._id, pinv._id)
-
-        if inv in visited:
-#            print('skipping because already in visited')
-            continue
-        else:
-            visited.add(inv)
+    edges = []
+    if noprop:
+        for inv in invs:
+            pinv = inv2pinv[inv]
             npinv = Not(pinv._expr)
             if check_single_inv_induction(ind_solver, inv._expr, npinv):
-                invdeps = [inv]
+                invdeps = [inv, clause_trans]
             else:
                 invdeps = get_deps(constraints, npinv)
-#            print("invdeps", [i._id for i in invdeps])
-            for i in invdeps:
-                if i != clause_trans:
-                    to_visit.appendleft(i)
+            invdeps.remove(clause_trans)
             deps[inv] = invdeps
-        count += 1
+            for d in invdeps:
+                edges.append((str(inv._id), str(d._id)))
+    else:
+        to_visit = deque([prop])
+        visited = set()
+        count = 0
+        while to_visit:
+            if count % 20 == 0:
+                print('#', end='')
+                sys.stdout.flush()
+
+            inv = to_visit.pop()
+            pinv = inv2pinv[inv]
+
+    #        print('visiting', inv._id, pinv._id)
+
+            if inv in visited:
+    #            print('skipping because already in visited')
+                continue
+            else:
+                visited.add(inv)
+                npinv = Not(pinv._expr)
+                if check_single_inv_induction(ind_solver, inv._expr, npinv):
+                    invdeps = [inv]
+                else:
+                    invdeps = get_deps(constraints, npinv)
+    #            print("invdeps", [i._id for i in invdeps])
+                if clause_trans in invdeps:
+                    invdeps.remove(clause_trans)
+                for i in invdeps:
+                    if i not in visited:
+                        to_visit.appendleft(i)
+                deps[inv] = invdeps
+            count += 1
 
     print('\nBuilding graph...')
     dot = Digraph(comment="Induction Graph")
 
-    to_visit = deque()
-    visited = set()
-    # handle prop specially
-    visited.add(prop)
-    for d in deps[prop]:
-        if d == prop:
-            dot.edge('Prop', 'Prop')
-        elif d != clause_trans:
-            to_visit.appendleft(d)
-            dot.edge('Prop', str(d._id))
 
-    while to_visit:
-        inv = to_visit.pop()
-        if inv in visited:
-            continue
-        visited.add(inv)
-        if inv not in deps:
-            # inv is a leaf
-            continue
-        for d in deps[inv]:
+    if not noprop:
+        to_visit = deque()
+        visited = set()
+        # handle prop specially
+        visited.add(prop)
+        for d in deps[prop]:
             if d == prop:
-                dot.edge(str(inv._id), 'Prop')
-            elif d == clause_trans:
-                continue
-            else:
-                dot.edge(str(inv._id), str(d._id))
+                edges.append(('Prop', 'Prop'))
+            elif d != clause_trans:
                 to_visit.appendleft(d)
+                edges.append(('Prop', str(d._id)))
 
+        count = 0
+        while to_visit:
+            if count % 20 == 0:
+                print('#', end='')
+            inv = to_visit.pop()
+    #        print('visiting', inv._id)
+            if inv in visited:
+    #            print('skipping because already visited', inv._id)
+                continue
+            visited.add(inv)
+            if inv not in deps:
+                # inv is a leaf
+                continue
+            for d in deps[inv]:
+                if d == prop:
+                    edges.append((str(inv._id), 'Prop'))
+                elif d == clause_trans:
+                    continue
+                else:
+                    edges.append((str(inv._id), str(d._id)))
+                    if d not in visited:
+                        to_visit.appendleft(d)
+            count += 1
+
+    # pickle the graph
+    if gen_pickle:
+        f = open('%s.pkl'%outname, 'wb')
+        pickle.dump(edges, f)
+        f.close()
+    # end pickling the graph
+
+    dot.edges(edges)
     dot.render('./%s.dot'%outname)
 
-    print('==================== completed ====================')
+    print('\n==================== completed ====================')
 
 
 if __name__ == "__main__":
