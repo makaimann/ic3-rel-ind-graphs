@@ -84,13 +84,24 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Find Strongly Connected Components")
     parser.add_argument('input_file', help='Pickled list of edges')
     parser.add_argument('--proc', metavar="<PROC_TYPE>", help='The type of processing to do: <list|num|hist>', default='list')
+    parser.add_argument('--remove', metavar="<NODES_TO_REMOVE>", help='A semicolon delimited list of node names to remove', default='')
     args = parser.parse_args()
+
+    proc = args.proc
+    remove = args.remove
+
+    remove = remove.split(';')
+    if '' in remove:
+        remove.remove('')
 
     edges = pickle.load(open(args.input_file, 'rb'))
 
-    proc = args.proc
     if proc not in {'list', 'num', 'hist'}:
         raise NotImplementedError("{} processing not implemented".format(proc))
+
+    if remove:
+        print('removing', remove)
+        edges = list(filter(lambda nodes: nodes[0] not in remove and nodes[1] not in remove, edges))
 
     d = dict()
     count = 0
