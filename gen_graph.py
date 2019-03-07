@@ -109,7 +109,7 @@ def main():
     parser.add_argument('-ip', dest='invprime_cand_filename',
                         metavar='<INVPRIMECAND_FILENAME>',
                         help='primed CNF of candidate invaraiants from an IC3 frame')
-    parser.add_argument('-o', dest='outname',
+    parser.add_argument('-o', dest='outname', default='out',
                         metavar='<OUTPUT_FILE>',
                         help='Filename to write the graphviz graph to.')
     parser.add_argument('--pickle', dest='gen_pickle', action="store_true",
@@ -166,7 +166,6 @@ def main():
     ind_solver.add(z3trans)
 
 #    debug_printing(inv2pinv, clause_trans, prop, include_mapping=True)
-    deps = {}
     edges = []
     if noprop:
         for inv in invs:
@@ -177,7 +176,6 @@ def main():
             else:
                 invdeps = get_deps(constraints, npinv)
             invdeps.remove(clause_trans)
-            deps[inv] = invdeps
             for d in invdeps:
                 edges.append((str(inv._id), str(d._id)))
     else:
@@ -207,61 +205,33 @@ def main():
     #            print("invdeps", [i._id for i in invdeps])
                 if clause_trans in invdeps:
                     invdeps.remove(clause_trans)
-                for i in invdeps:
-                    if i not in visited:
-                        to_visit.appendleft(i)
-                deps[inv] = invdeps
-            count += 1
-
-    print('\nBuilding graph...')
-    dot = Digraph(comment="Induction Graph")
-
-
-    if not noprop:
-        to_visit = deque()
-        visited = set()
-        # handle prop specially
-        visited.add(prop)
-        for d in deps[prop]:
-            if d == prop:
-                edges.append(('Prop', 'Prop'))
-            elif d != clause_trans:
-                to_visit.appendleft(d)
-                edges.append(('Prop', str(d._id)))
-
-        count = 0
-        while to_visit:
-            if count % 20 == 0:
-                print('#', end='')
-            inv = to_visit.pop()
-    #        print('visiting', inv._id)
-            if inv in visited:
-    #            print('skipping because already visited', inv._id)
-                continue
-            visited.add(inv)
-            if inv not in deps:
-                # inv is a leaf
-                continue
-            for d in deps[inv]:
-                if d == prop:
-                    edges.append((str(inv._id), 'Prop'))
-                elif d == clause_trans:
-                    continue
-                else:
+                for d in invdeps:
                     edges.append((str(inv._id), str(d._id)))
                     if d not in visited:
                         to_visit.appendleft(d)
             count += 1
 
+    print()
     # pickle the graph
     if gen_pickle:
+        print('Pickling to {}.pkl'%outname)
         f = open('%s.pkl'%outname, 'wb')
         pickle.dump(edges, f)
         f.close()
     # end pickling the graph
 
-    dot.edges(edges)
-    dot.render('./%s.dot'%outname)
+    print('Writing graph to {}.dot'.format(outname))
+    f = open('%s.dot'%outname, 'w')
+    f.write('// Induction Graph of %s\ndigraph{\n'%outname)
+    for n1, n2 in edges:
+        f.write("  {} -> {}\n".format(n1, n2))
+    f.write("}")
+    f.close()
+
+
+    # dot = Digraph(comment="Induction Graph")
+    # dot.edges(edges)
+    # dot.render('./%s.dot'%outname)
 
     print('\n==================== completed ====================')
 
