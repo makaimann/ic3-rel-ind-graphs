@@ -58,17 +58,16 @@ def get_mus(constraints):
         current.remove(i)
         if not check_subset(current):
             core = s.unsat_core()
-            # TODO: do constraints never show up in the core? Seems like we could get a key error
+            # FIXME: do constraints never show up in the core? Seems like we could get a key error
             current = set(indicator2idx[ind.get_id()] for ind in core)
         else:
             current.add(i)
+    assert not check_subset(current), "Expecting unsat at end of get_mus"
     return [constraints[i] for i in current]
 
 def get_deps(constraints, npinv):
     constraints = constraints[:]
     constraints.append(npinv)
-    # csolver = SubsetSolver(constraints)
-    # l2c = csolver.get_lit_constraint_map()
 
     deps = set()
     for c in get_mus(constraints):
@@ -214,7 +213,7 @@ def main():
     print()
     # pickle the graph
     if gen_pickle:
-        print('Pickling to {}.pkl'%outname)
+        print('Pickling to %s.pkl'%outname)
         f = open('%s.pkl'%outname, 'wb')
         pickle.dump(edges, f)
         f.close()
