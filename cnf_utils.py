@@ -1,6 +1,6 @@
 from typing import Dict, List, Sequence
 
-from z3 import And, Bool, BoolRef, ExprRef, Not, Or, Solver
+from z3 import And, Bool, BoolRef, ExprRef, Not, Or, Solver, unsat, sat
 
 varmap = {}
 
@@ -96,14 +96,14 @@ def identify_invariants(trans:List[Clause], inv_cand:List[Clause], inv_primed_ca
     print("Checking {} candidate invariants...".format(len(inv_cand)))
 
     while not check_inductiveness(slv, inv2pinv):
+        print('checking')
         slv.push()
         assert_clauses(slv, inv2pinv.keys())
         for ic in [i for i in inv2pinv.keys()]:
             slv.push()
             ipc = inv2pinv[ic]
             slv.add(Not(ipc._expr))
-            if str(slv.check()) == "sat":
-                # not an invariant
+            if slv.check() == sat:
                 del inv2pinv[ic]
             slv.pop()
         slv.pop()
