@@ -131,8 +131,10 @@ if __name__ == "__main__":
             print()
     elif proc == "num":
         print('Found {} SCCs of the following lengths:'.format(len(sccs)))
-        lengths = sorted([len(scc) for scc in sccs])
-        print("  " + ", ".join([str(l) for l in lengths]))
+        hist = defaultdict(int)
+        for scc in sccs:
+            hist[len(scc)] += 1
+        print(hist)
     elif proc == "hist":
         from matplotlib import pyplot as plt
 
