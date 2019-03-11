@@ -132,22 +132,10 @@ def main():
         inv_cand = inv_cand[1:]
         inv_primed_cand = inv_primed_cand[1:]
 
+    inv2pinv = dict(zip(inv_cand, inv_primed_cand))
+
     z3trans = And([c._expr for c in trans])
     clause_trans = Clause(z3trans)
-
-    # sanity check
-    ssanity = Solver()
-    ssanity.add(z3trans)
-    for inv in inv_cand:
-        ssanity.add(inv._expr)
-    for pinv in inv_primed_cand[1:]:
-        ssanity.add(pinv._expr)
-    ssanity.add(Not(primeprop._expr))
-    res = ssanity.check()
-    assert res == unsat, "Expecting unsat but got {}".format(res)
-    # end sanity check
-
-    inv2pinv = identify_invariants(trans, inv_cand, inv_primed_cand)
 
     if not noprop:
         assert prop in inv2pinv
@@ -189,6 +177,11 @@ def main():
             inv = to_visit.pop()
             pinv = inv2pinv[inv]
 
+            if inv == prop:
+                strinv = 'Prop'
+            else:
+                strinv = str(inv._id)
+
     #        print('visiting', inv._id, pinv._id)
 
             if inv in visited:
@@ -205,7 +198,11 @@ def main():
                 if clause_trans in invdeps:
                     invdeps.remove(clause_trans)
                 for d in invdeps:
-                    edges.append((str(inv._id), str(d._id)))
+                    if d == prop:
+                        strd = 'Prop'
+                    else:
+                        strd = str(d._id)
+                    edges.append((strinv, strd))
                     if d not in visited:
                         to_visit.appendleft(d)
             count += 1
