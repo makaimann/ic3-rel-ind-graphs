@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 # obtained from: https://www.geeksforgeeks.org/strongly-connected-components/
 
-# Python implementation of Kosaraju's algorithm to print all SCCs
+# Python implementation of Kosaraju's algorithm to get SCCs
+# The original code was contributed by Neelam Yadav
+#     original code has been modified here
 
+import argparse
 from collections import defaultdict
+import pathlib
+import pickle
+import sys
 
 #This class represents a directed graph using adjacency list representation
 class Graph:
@@ -77,24 +83,40 @@ class Graph:
         return sccs
 
 if __name__ == "__main__":
-    import argparse
-    import pickle
-    import sys
-
     parser = argparse.ArgumentParser(description="Find Strongly Connected Components")
-    parser.add_argument('input_file', help='Pickled list of edges')
-    parser.add_argument('--proc', metavar="<PROC_TYPE>", help='The type of processing to do: <list|num|hist>', default='list')
+    parser.add_argument('input_file', help='Pickled list of edges (.pkl), or string of hyperedges that can be evaluated (.out)')
+    parser.add_argument('--proc', metavar="<PROC_TYPE>", choices=['list', 'num', 'hist'],
+                        help='The type of processing to do: <list|num|hist>', default='list')
     parser.add_argument('--remove', metavar="<NODES_TO_REMOVE>", help='A semicolon delimited list of node names to remove', default='')
     args = parser.parse_args()
 
     proc = args.proc
     remove = args.remove
+    input_file = pathlib.Path(args.input_file)
 
     remove = remove.split(';')
     if '' in remove:
         remove.remove('')
 
-    edges = pickle.load(open(args.input_file, 'rb'))
+    # include nodes so that we still get a result even if there are no edges
+    # Note: this won't happen with the pickled edge files because there would be no edges listed
+    nodes = set()
+    if input_file.suffix == '.pkl':
+        edges = pickle.load(input_file.open('rb'))
+        for n1, n2 in edges:
+            nodes.add(n1)
+            nodes.add(n2)
+    elif input_file.suffix == '.out':
+        hyperedges = eval(input_file.open().read())
+        # expand the hyperedges
+        edges = []
+        for src_node, dst_nodes in hyperedges:
+            nodes.add(src_node)
+            if len(dst_nodes) > 0:
+                # FIXME - just picking the first MUC
+                for dn in dst_nodes[0]:
+                    edges.append((src_node, dn))
+                    nodes.add(dn)
 
     if proc not in {'list', 'num', 'hist'}:
         raise NotImplementedError("{} processing not implemented".format(proc))
@@ -105,12 +127,9 @@ if __name__ == "__main__":
 
     d = dict()
     count = 0
-    for n1, n2 in edges:
-        if n1 not in d:
-            d[n1] = count
-            count += 1
-        if n2 not in d:
-            d[n2] = count
+    for node in nodes:
+        if node not in d:
+            d[node] = count
             count += 1
 
     # Create a graph given in the above diagram
@@ -152,5 +171,3 @@ if __name__ == "__main__":
         plt.ylabel('Number of SCCs')
         plt.title('Occurrences of SCC sizes')
         plt.show()
-
-    #This code is contributed by Neelam Yadav
