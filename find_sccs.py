@@ -177,7 +177,7 @@ if __name__ == "__main__":
                "in given graph")
         for scc in sccs:
             for n in scc:
-                print(rev[n], end=' ')
+                print(from_graph_node[n], end=' ')
             print()
     elif proc == "num":
         print('Found {} SCCs of the following lengths:'.format(len(sccs)))
