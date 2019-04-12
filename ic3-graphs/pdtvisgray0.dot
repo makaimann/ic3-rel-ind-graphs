@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/pdtvisgray0
+digraph{
+  Prop -> Prop
+}

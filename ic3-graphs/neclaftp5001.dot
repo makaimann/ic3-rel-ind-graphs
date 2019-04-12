@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/neclaftp5001
+digraph{
+  Prop -> Prop
+}

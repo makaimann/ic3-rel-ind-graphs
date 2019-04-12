@@ -1,0 +1,7 @@
+// Induction Graph of ./tests/bj08amba2g1
+digraph{
+  Prop -> 1832
+  1832 -> 1832
+  1832 -> 1833
+  1833 -> 1832
+}

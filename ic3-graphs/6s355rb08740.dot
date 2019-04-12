@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/6s355rb08740
+digraph{
+  Prop -> Prop
+}

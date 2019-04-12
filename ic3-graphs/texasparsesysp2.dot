@@ -1,0 +1,7 @@
+// Induction Graph of ./tests/texasparsesysp2
+digraph{
+  Prop -> 16477
+  Prop -> 16476
+  16477 -> 16477
+  16476 -> 16476
+}

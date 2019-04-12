@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/bob9234specand
+digraph{
+  Prop -> Prop
+}

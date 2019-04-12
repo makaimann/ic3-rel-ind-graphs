@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/bobsynthand
+digraph{
+  Prop -> Prop
+}

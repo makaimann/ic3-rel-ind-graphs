@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/pdtvisns2p3
+digraph{
+  Prop -> Prop
+}

@@ -1,0 +1,5 @@
+// Induction Graph of ./tests/mentorbm1p02
+digraph{
+  Prop -> 76298
+  76298 -> 76298
+}

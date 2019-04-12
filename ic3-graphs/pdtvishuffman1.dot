@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/pdtvishuffman1
+digraph{
+  Prop -> Prop
+}

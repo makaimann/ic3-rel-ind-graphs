@@ -1,0 +1,5 @@
+// Induction Graph of ./tests/139464p0
+digraph{
+  Prop -> 74307
+  74307 -> 74307
+}

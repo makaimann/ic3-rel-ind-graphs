@@ -1,0 +1,5 @@
+// Induction Graph of ./tests/kenflashp07
+digraph{
+  Prop -> 2752
+  2752 -> 2752
+}

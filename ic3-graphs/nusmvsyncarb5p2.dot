@@ -1,0 +1,23 @@
+// Induction Graph of ./tests/nusmvsyncarb5p2
+digraph{
+  Prop -> 322
+  Prop -> 321
+  Prop -> 320
+  Prop -> 319
+  Prop -> 317
+  Prop -> 316
+  Prop -> 318
+  Prop -> 314
+  Prop -> 315
+  Prop -> 323
+  322 -> 316
+  321 -> 323
+  320 -> 315
+  319 -> 322
+  317 -> 314
+  316 -> 320
+  318 -> 321
+  314 -> 318
+  315 -> 319
+  323 -> 317
+}

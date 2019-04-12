@@ -1,0 +1,7 @@
+// Induction Graph of ./tests/nusmvreactorp3
+digraph{
+  Prop -> 2832
+  2832 -> 2832
+  2832 -> 2843
+  2843 -> 2843
+}

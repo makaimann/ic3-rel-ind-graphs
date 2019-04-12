@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/bobunr2p10d40l
+digraph{
+  Prop -> Prop
+}

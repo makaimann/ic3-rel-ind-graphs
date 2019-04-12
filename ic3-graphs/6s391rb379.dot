@@ -1,0 +1,7 @@
+// Induction Graph of ./tests/6s391rb379
+digraph{
+  Prop -> 34239
+  Prop -> 34238
+  34239 -> 34239
+  34238 -> 34238
+}

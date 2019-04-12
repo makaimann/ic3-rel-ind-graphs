@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/viselevatorp1
+digraph{
+  Prop -> Prop
+}

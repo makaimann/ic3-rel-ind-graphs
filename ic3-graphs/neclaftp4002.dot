@@ -1,0 +1,7 @@
+// Induction Graph of ./tests/neclaftp4002
+digraph{
+  Prop -> 19339
+  19339 -> 19339
+  19339 -> 19338
+  19338 -> 19338
+}

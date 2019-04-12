@@ -1,0 +1,7 @@
+// Induction Graph of ./tests/pj2010
+digraph{
+  Prop -> 45465
+  Prop -> 45467
+  45465 -> 45465
+  45467 -> 45467
+}

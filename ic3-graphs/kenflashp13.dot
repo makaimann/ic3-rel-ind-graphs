@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/kenflashp13
+digraph{
+  Prop -> Prop
+}

@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/mentorbm1or
+digraph{
+  Prop -> Prop
+}

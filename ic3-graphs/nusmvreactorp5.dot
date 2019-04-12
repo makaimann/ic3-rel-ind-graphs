@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/nusmvreactorp5
+digraph{
+  Prop -> Prop
+}

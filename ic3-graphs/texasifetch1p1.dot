@@ -1,0 +1,4 @@
+// Induction Graph of ./tests/texasifetch1p1
+digraph{
+  Prop -> Prop
+}
