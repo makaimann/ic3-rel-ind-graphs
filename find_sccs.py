@@ -64,6 +64,9 @@ def dfs(g:Graph)->List[int]:
     assert len(finish_stack) == len(g.nodes)
     return finish_stack
 
+def bfs(g:Graph)->List[int]:
+    pass
+
 def get_sccs(g:Graph)->List[Set[int]]:
     sccs = []
 
@@ -106,7 +109,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Find Strongly Connected Components")
     parser.add_argument('input_file', help='Pickled list of edges (.pkl), or string of hyperedges that can be evaluated (.out)')
     parser.add_argument('--proc', metavar="<PROC_TYPE>", choices=['list', 'num', 'hist'],
-                        help='The type of processing to do: <list|num|hist>', default='list')
+                        help='The type of processing to do: <list|num|hist>', default='num')
     parser.add_argument('--remove', metavar="<NODES_TO_REMOVE>", help='A semicolon delimited list of node names to remove', default='')
     args = parser.parse_args()
 
@@ -142,8 +145,10 @@ if __name__ == "__main__":
         raise NotImplementedError("{} processing not implemented".format(proc))
 
     if remove:
-        print('removing', remove)
+        print('Removing', remove)
+        edge_len = len(edges)
         edges = list(filter(lambda nodes: nodes[0] not in remove and nodes[1] not in remove, edges))
+        print("Removed {} edges".format(edge_len - len(edges)))
 
     d = dict()
     count = 0
