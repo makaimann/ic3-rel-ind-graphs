@@ -127,6 +127,8 @@ if __name__ == "__main__":
     if input_file.suffix == '.pkl':
         edges = pickle.load(input_file.open('rb'))
         for n1, n2 in edges:
+            n1 = str(n1)
+            n2 = str(n2)
             nodes.add(n1)
             nodes.add(n2)
     elif input_file.suffix == '.out':
@@ -134,10 +136,11 @@ if __name__ == "__main__":
         # expand the hyperedges
         edges = []
         for src_node, dst_nodes in hyperedges:
+            src_node = str(src_node)
             nodes.add(src_node)
             if len(dst_nodes) > 0:
                 # FIXME - just picking the first MUC
-                for dn in dst_nodes[0]:
+                for dn in (str(d) for d in dst_nodes[0]):
                     edges.append((src_node, dn))
                     nodes.add(dn)
 
