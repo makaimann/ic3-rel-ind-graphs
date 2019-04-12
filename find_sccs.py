@@ -150,20 +150,20 @@ if __name__ == "__main__":
         edges = list(filter(lambda nodes: nodes[0] not in remove and nodes[1] not in remove, edges))
         print("Removed {} edges".format(edge_len - len(edges)))
 
-    d = dict()
+    to_graph_node = dict()
     count = 0
     for node in nodes:
-        if node not in d:
-            d[node] = count
+        if node not in to_graph_node:
+            to_graph_node[node] = count
             count += 1
 
     # Create a graph given in the above diagram
-    g = Graph(list(d.values()))
+    g = Graph(list(to_graph_node.values()))
 
     for n1, n2 in edges:
-        g.addEdge(d[n1], d[n2])
+        g.addEdge(to_graph_node[n1], to_graph_node[n2])
 
-    rev = {v:k for k, v in d.items()}
+    from_graph_node = {v:k for k, v in to_graph_node.items()}
     sccs = get_sccs(g)
 
     if proc == "list":
