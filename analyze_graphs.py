@@ -138,7 +138,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Find Strongly Connected Components")
     parser.add_argument('input_file', help='Pickled list of edges (.pkl), or string of hyperedges that can be evaluated (.out)')
     parser.add_argument('--proc', metavar="<PROC_TYPE>", choices=['list', 'num', 'hist', 'bfs'],
-                        help='The type of processing to do: <list|num|hist>', default='num')
+                        help='The type of processing to do: <list|num|hist|bfs>', default='num')
     parser.add_argument('--remove', metavar="<NODES_TO_REMOVE>", help='A semicolon delimited list of node names to remove', default='')
     args = parser.parse_args()
 
