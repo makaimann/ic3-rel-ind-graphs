@@ -149,6 +149,9 @@ if __name__ == "__main__":
 
     if remove:
         print('Removing', remove)
+        for r in remove:
+            assert r in nodes, "Expecting node to be removed, '{}' to be in the set of nodes".format(r)
+            nodes.remove(r)
         edge_len = len(edges)
         edges = list(filter(lambda nodes: nodes[0] not in remove and nodes[1] not in remove, edges))
         print("Removed {} edges".format(edge_len - len(edges)))
