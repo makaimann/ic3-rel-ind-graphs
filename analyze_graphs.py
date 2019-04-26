@@ -1,26 +1,22 @@
 #!/usr/bin/env python3
-# obtained from: https://www.geeksforgeeks.org/strongly-connected-components/
-
-# Python implementation of Kosaraju's algorithm to get SCCs
-# The original code was contributed by Neelam Yadav
-#     original code has been modified here
 
 import argparse
 from collections import defaultdict, deque
+import graphviz
 import pathlib
 import pickle
 import sys
-from typing import List, Optional, Set, Dict
+from typing import Any, Dict, List, Optional, Set
 
 PROP='Prop'
 
 class Graph:
 
-    def __init__(self, nodes:List[int])->None:
+    def __init__(self, nodes:List[str])->None:
         self.nodes = nodes
         self.edges = defaultdict(list)
 
-    def addEdge(self, u, v):
+    def addEdge(self, u:str, v:str):
         self.edges[u].append(v)
 
     def transpose(self):
@@ -67,7 +63,8 @@ def dfs(g:Graph)->List[int]:
                         # finished DFS at this node
                         finish_stack.append(n)
 
-    assert len(finish_stack) == len(g.nodes)
+    assert len(finish_stack) == len(g.nodes), \
+        "Expected all nodes to be covered but only got {}/{}".format(len(finish_stack), len(g.nodes))
     return finish_stack
 
 def bfs(g:Graph, start:int)->Dict[int, Optional[int]]:
@@ -122,6 +119,14 @@ def get_sccs(g:Graph)->List[Set[int]]:
         sccs.append(scc)
     return sccs
 
+def gen_dot(g:Graph, node_mapping:Dict[int, Any]=dict())->graphviz.Digraph:
+    dot = graphviz.Digraph()
+    for node, dests in g.edges.items():
+        for d in dests:
+            dot.edge(str(node), str(d))
+    return dot
+
+
 # Simple Test
 # if __name__ == "__main__":
 #     g = Graph([0, 1, 2, 3, 4])
@@ -137,7 +142,7 @@ def get_sccs(g:Graph)->List[Set[int]]:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Find Strongly Connected Components")
     parser.add_argument('input_file', help='Pickled list of edges (.pkl), or string of hyperedges that can be evaluated (.out)')
-    parser.add_argument('--proc', metavar="<PROC_TYPE>", choices=['list', 'num', 'hist', 'bfs'],
+    parser.add_argument('--proc', metavar="<PROC_TYPE>", choices=['list', 'num', 'hist', 'bfs', 'dot'],
                         help='The type of processing to do: <list|num|hist|bfs>', default='num')
     parser.add_argument('--remove', metavar="<NODES_TO_REMOVE>", help='A semicolon delimited list of node names to remove', default='')
     args = parser.parse_args()
@@ -182,20 +187,11 @@ if __name__ == "__main__":
         edges = list(filter(lambda nodes: nodes[0] not in remove and nodes[1] not in remove, edges))
         print("Removed {} edges".format(edge_len - len(edges)))
 
-    to_graph_node = dict()
-    dist = 0
-    for node in nodes:
-        if node not in to_graph_node:
-            to_graph_node[node] = dist
-            dist += 1
-
     # Create a graph given in the above diagram
-    g = Graph(list(to_graph_node.values()))
+    g = Graph(list(nodes))
 
     for n1, n2 in edges:
-        g.addEdge(to_graph_node[n1], to_graph_node[n2])
-
-    from_graph_node = {v:k for k, v in to_graph_node.items()}
+        g.addEdge(n1, n2)
 
     if proc == "list":
         sccs = get_sccs(g)
@@ -203,7 +199,7 @@ if __name__ == "__main__":
                "in given graph")
         for scc in sccs:
             for n in scc:
-                print(from_graph_node[n], end=' ')
+                print(n, end=' ')
             print()
     elif proc == "num":
         sccs = get_sccs(g)
@@ -231,7 +227,7 @@ if __name__ == "__main__":
         plt.title('Occurrences of SCC sizes')
         plt.show()
     elif proc == 'bfs':
-        labeled_nodes = bfs(g, to_graph_node[PROP])
+        labeled_nodes = bfs(g, PROP)
         max_distance = max(filter(lambda x: x is not None, labeled_nodes.values()))
         bfs_count = [0]*(max_distance+1)
 
@@ -242,3 +238,6 @@ if __name__ == "__main__":
                 bfs_count[dist] += 1
 
         print(bfs_count)
+
+    elif proc == 'dot':
+        raise NotImplementedError()
