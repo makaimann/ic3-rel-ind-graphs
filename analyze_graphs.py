@@ -3,7 +3,7 @@
 import argparse
 from collections import defaultdict, deque
 import graphviz
-import pathlib
+from pathlib import Path
 import pickle
 import sys
 from typing import Any, Dict, List, Optional, Set
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
     proc = args.proc
     remove = args.remove
-    input_file = pathlib.Path(args.input_file)
+    input_file = Path(args.input_file)
 
     remove = remove.split(';')
     if '' in remove:
@@ -240,4 +240,12 @@ if __name__ == "__main__":
         print(bfs_count)
 
     elif proc == 'dot':
-        raise NotImplementedError()
+        dotfilepath = input_file.with_suffix('.dot')
+        # put it in the local directory
+        dotfilepath = Path("./") / dotfilepath.name
+        if dotfilepath.is_file():
+            raise RuntimeError("It looks like a file named {} "
+                               "already exists, aborting dot file rendering.".format(dotfilepath))
+        print('Writing graphviz file to {}'.format(dotfilepath))
+        dot = gen_dot(g)
+        dot.render(str(dotfilepath))
