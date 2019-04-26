@@ -28,7 +28,7 @@ class Graph:
                 gt.addEdge(dn, s)
         return gt
 
-def dfs(g:Graph)->List[int]:
+def dfs(g:Graph)->List[str]:
     '''
     Returns a "finish stack" where nodes have been added to the stack when
     every path from that node has already been explored
@@ -93,7 +93,7 @@ def bfs(g:Graph, start:int)->Dict[int, Optional[int]]:
 
     return labeled_nodes
 
-def get_sccs(g:Graph)->List[Set[int]]:
+def get_sccs(g:Graph)->List[Set[str]]:
     sccs = []
 
     finish_stack = dfs(g)
@@ -119,6 +119,33 @@ def get_sccs(g:Graph)->List[Set[int]]:
         sccs.append(scc)
     return sccs
 
+def gen_scc_graph(orig_graph:Graph, sccs:List[str]):
+    node_id = 0
+    og_node_to_scc_node = dict()
+    for scc in sccs:
+        num_nodes = 0
+        scc_size = len(scc)
+        for n in scc:
+            og_node_to_scc_node[n] = 'scc%i_%i'%(node_id, scc_size)
+            num_nodes += 1
+        node_id += 1
+
+    scc_graph = Graph(list(og_node_to_scc_node.values()))
+
+    for src, sinks in orig_graph.edges.items():
+        scc_src = og_node_to_scc_node[src]
+        for sink in sinks:
+            scc_sink = og_node_to_scc_node[sink]
+            if scc_src == scc_sink:
+                # don't add self edges -- that's assumed
+                continue
+            if scc_sink in scc_graph.edges[scc_src]:
+                # also don't add multiple edges
+                continue
+            scc_graph.addEdge(scc_src, scc_sink)
+
+    return scc_graph
+
 def gen_dot(g:Graph, node_mapping:Dict[int, Any]=dict())->graphviz.Digraph:
     dot = graphviz.Digraph()
     for node, dests in g.edges.items():
@@ -140,10 +167,11 @@ def gen_dot(g:Graph, node_mapping:Dict[int, Any]=dict())->graphviz.Digraph:
 #     print(sccs)
 
 if __name__ == "__main__":
+    proc_options = ['list', 'num', 'hist', 'bfs', 'dot', 'scc-dot']
     parser = argparse.ArgumentParser(description="Find Strongly Connected Components")
     parser.add_argument('input_file', help='Pickled list of edges (.pkl), or string of hyperedges that can be evaluated (.out)')
-    parser.add_argument('--proc', metavar="<PROC_TYPE>", choices=['list', 'num', 'hist', 'bfs', 'dot'],
-                        help='The type of processing to do: <list|num|hist|bfs>', default='num')
+    parser.add_argument('--proc', metavar="<PROC_TYPE>", choices=proc_options, default='num',
+                        help='The type of processing to do: <{}>'.format('|'.join(proc_options)))
     parser.add_argument('--remove', metavar="<NODES_TO_REMOVE>", help='A semicolon delimited list of node names to remove', default='')
     args = parser.parse_args()
 
@@ -248,4 +276,17 @@ if __name__ == "__main__":
                                "already exists, aborting dot file rendering.".format(dotfilepath))
         print('Writing graphviz file to {}'.format(dotfilepath))
         dot = gen_dot(g)
+        dot.render(str(dotfilepath))
+
+    elif proc == 'scc-dot':
+        dotfilepath = input_file.stem + '-sccs.dot'
+        # put it in the local directory
+        dotfilepath = Path("./") / dotfilepath
+        if dotfilepath.is_file():
+            raise RuntimeError("It looks like a file named {} "
+                               "already exists, aborting dot file rendering.".format(dotfilepath))
+        print('Writing SCC graphviz file to {}'.format(dotfilepath))
+
+        scc_graph = gen_scc_graph(g, get_sccs(g))
+        dot = gen_dot(scc_graph)
         dot.render(str(dotfilepath))
