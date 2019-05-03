@@ -8,7 +8,7 @@ import pickle
 import sys
 from typing import Any, Dict, List, Optional, Set
 
-PROP='Prop'
+PROP='130'
 
 class Graph:
 
@@ -173,6 +173,7 @@ if __name__ == "__main__":
     parser.add_argument('--proc', metavar="<PROC_TYPE>", choices=proc_options, default='num',
                         help='The type of processing to do: <{}>'.format('|'.join(proc_options)))
     parser.add_argument('--remove', metavar="<NODES_TO_REMOVE>", help='A semicolon delimited list of node names to remove', default='')
+    parser.add_argument('--safety', metavar="<SAFETY PROPERTY>", help="Name of safety property node", default='Prop')
     args = parser.parse_args()
 
     proc = args.proc
@@ -255,7 +256,7 @@ if __name__ == "__main__":
         plt.title('Occurrences of SCC sizes')
         plt.show()
     elif proc == 'bfs':
-        labeled_nodes = bfs(g, PROP)
+        labeled_nodes = bfs(g, args.safety)
         max_distance = max(filter(lambda x: x is not None, labeled_nodes.values()))
         bfs_count = [0]*(max_distance+1)
 
