@@ -9,6 +9,8 @@ class Graph:
         self.edges = defaultdict(list)
 
     def addEdge(self, u:str, v:str):
+        assert u in self.nodes
+        assert v in self.nodes
         self.edges[u].append(v)
 
     def rmNode(self, u:str):
