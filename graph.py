@@ -1,3 +1,7 @@
+from collections import defaultdict
+
+from typing import Any, Dict, List, Optional, Set
+
 class Graph:
 
     def __init__(self, nodes:List[str])->None:
@@ -9,8 +13,18 @@ class Graph:
 
     def rmNode(self, u:str):
         del self.edges[u]
+        self.nodes.remove(u)
         for sinks in self.edges.values():
-            sinks.remove(u)
+            try:
+                sinks.remove(u)
+            except:
+                pass
+
+    @property
+    def leaves(self):
+        for n in self.nodes:
+            if not self.edges[n]:
+                yield n
 
     def transpose(self):
         gt = Graph(self.nodes)
