@@ -1,6 +1,6 @@
 from graph import Graph
 
-from collections import defaultdict
+from collections import defaultdict, deque
 from copy import deepcopy
 
 from typing import Any, Dict, List, Optional, Set
@@ -63,7 +63,7 @@ def dfs(g:Graph)->List[str]:
         "Expected all nodes to be covered but only got {}/{}".format(len(finish_stack), len(g.nodes))
     return finish_stack
 
-def bfs(g:Graph, start:int)->Dict[int, Optional[int]]:
+def bfs(g:Graph, start:str)->Dict[str, Optional[str]]:
     '''
     Takes a graph and starting node and returns a dictionary labeling the distance from the start node
     for each node in the graph.
@@ -117,10 +117,9 @@ def get_sccs(g:Graph)->List[Set[str]]:
 
 def get_scc_graphs(g:Graph)->List[Graph]:
     graphs = []
-    for node_list in get_sccs(g):
-        new_graph = Graph(node_list)
-        node_set = set(node_list)
-        for n in node_list:
+    for node_set in get_sccs(g):
+        new_graph = Graph(list(node_set))
+        for n in node_set:
             for sink in g.edges[n]:
                 if sink in node_set:
                     new_graph.addEdge(n, sink)

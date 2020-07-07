@@ -1,6 +1,6 @@
 from graph import Graph
 
-from graph_utils import is_acyclic, print_graph, get_scc_graphs
+from graph_utils import is_acyclic, print_graph, get_scc_graphs, bfs, dfs
 
 
 def test_is_acyclic_tree():
@@ -51,3 +51,26 @@ def test_rm_node():
     g.rmNode('6')
 
     assert is_acyclic(g)
+
+def test_sccs():
+    # graph copied from: https://www.geeksforgeeks.org/strongly-connected-components/
+    g = Graph(['0', '1', '2', '3', '4'])
+    g.addEdge('0', '3')
+    g.addEdge('0', '2')
+    g.addEdge('2', '1')
+    g.addEdge('1', '0')
+    g.addEdge('3', '4')
+
+    sccs = get_scc_graphs(g)
+
+    assert len(sccs) == 3, 'should have 3 sccs'
+
+    for scc in sccs:
+        scc_nodes = set(scc.nodes)
+        visited_nodes_dfs = dfs(scc)
+        assert set(visited_nodes_dfs) == scc_nodes, "by definition should reach all nodes"
+
+        # shouldn't matter if it's dfs or bfs
+        visited_nodes_bfs_dict = bfs(scc, scc.nodes[0])
+        assert set(visited_nodes_bfs_dict.keys()) == scc_nodes, "by definition should reach all nodes"
+

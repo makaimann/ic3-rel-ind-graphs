@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Set
 class Graph:
 
     def __init__(self, nodes:List[str])->None:
-        self.nodes = nodes
+        self.nodes = list(nodes)
         self.edges = defaultdict(list)
 
     def addEdge(self, u:str, v:str):
