@@ -61,14 +61,22 @@ def test_sccs():
     g.addEdge('1', '0')
     g.addEdge('3', '4')
 
+    print('Finding SCCs for graph')
+    print_graph(g)
+
     sccs = get_scc_graphs(g)
 
     assert len(sccs) == 3, 'should have 3 sccs'
 
-    for scc in sccs:
+    print('SCCS:')
+    visited_nodes = set()
+    for i, scc in enumerate(sccs):
+        print("SCC", i)
         scc_nodes = set(scc.nodes)
         visited_nodes_dfs = set(dfs(scc))
         assert visited_nodes_dfs == scc_nodes, "by definition should reach all nodes"
+
+        print_graph(scc)
 
         # shouldn't matter if it's dfs or bfs
         visited_nodes_bfs_dict = bfs(scc, scc.nodes[0])
@@ -81,4 +89,8 @@ def test_sccs():
             for s in sinks:
                 edge_nodes.add(s)
         assert edge_nodes == visited_nodes_dfs
+
+        for n in edge_nodes:
+            assert n not in visited_nodes, 'should only appear in one SCC'
+            visited_nodes.add(n)
 
