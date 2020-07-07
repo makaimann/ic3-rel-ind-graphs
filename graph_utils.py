@@ -114,3 +114,21 @@ def get_sccs(g:Graph)->List[Set[str]]:
                         dfs_stack.append(dn)
         sccs.append(scc)
     return sccs
+
+def get_scc_graphs(g:Graph)->List[Graph]:
+    graphs = []
+    for node_list in get_sccs(g):
+        new_graph = Graph(node_list)
+        node_set = set(node_list)
+        for n in node_list:
+            for sink in g.edges[n]:
+                if sink in node_set:
+                    new_graph.addEdge(n, sink)
+        graphs.append(new_graph)
+    return graphs
+
+def print_graph(g:Graph)->None:
+    for n in g.nodes:
+        print(n, end=' => { ')
+        str_list = ','.join(g.edges[n])
+        print(str_list, end=' }\n')

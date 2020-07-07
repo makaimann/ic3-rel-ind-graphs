@@ -1,6 +1,6 @@
 from graph import Graph
 
-from graph_utils import is_acyclic
+from graph_utils import is_acyclic, print_graph, get_scc_graphs
 
 
 def test_is_acyclic_tree():
