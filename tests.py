@@ -67,10 +67,18 @@ def test_sccs():
 
     for scc in sccs:
         scc_nodes = set(scc.nodes)
-        visited_nodes_dfs = dfs(scc)
-        assert set(visited_nodes_dfs) == scc_nodes, "by definition should reach all nodes"
+        visited_nodes_dfs = set(dfs(scc))
+        assert visited_nodes_dfs == scc_nodes, "by definition should reach all nodes"
 
         # shouldn't matter if it's dfs or bfs
         visited_nodes_bfs_dict = bfs(scc, scc.nodes[0])
         assert set(visited_nodes_bfs_dict.keys()) == scc_nodes, "by definition should reach all nodes"
+
+        # should only include edges in the SCC
+        edge_nodes = set()
+        for n, sinks in scc.edges.items():
+            edge_nodes.add(n)
+            for s in sinks:
+                edge_nodes.add(s)
+        assert edge_nodes == visited_nodes_dfs
 
