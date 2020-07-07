@@ -7,8 +7,12 @@ from graph import Graph
 from graph_utils import is_acyclic, get_scc_graphs, print_graph
 
 
-def compute_cycle_rank_rec(g:Graph)->int:
-    if is_acyclic(g):
+def compute_cycle_rank(g:Graph)->int:
+    if not g.nodes:
+        return 0
+    # TODO: what about empty edges?
+    #       not explicitly handled in https://en.wikipedia.org/wiki/Cycle_rank
+    elif is_acyclic(g):
         return 0
     else:
         sccs = get_scc_graphs(g)
@@ -17,29 +21,12 @@ def compute_cycle_rank_rec(g:Graph)->int:
         scc_cycle_ranks = []
         for scc in sccs:
             rm_node_cycle_ranks = []
-            for n in self.nodes:
-                scc_m_n = deepcopy(g)
+            for n in scc.nodes:
+                scc_m_n = deepcopy(scc)
                 scc_m_n.rmNode(n)
-                rm_node_cycle_ranks.append(compute_cycle_rank_res(scc_m_n))
+                rm_node_cycle_ranks.append(compute_cycle_rank(scc_m_n))
             scc_cycle_ranks.append(1 + min(rm_node_cycle_ranks))
         return max(scc_cycle_ranks)
-
-
-
-def compute_cycle_rank(g:Graph)->int:
-    if is_acyclic(g):
-        return 0
-    else:
-        sccs = get_scc_graphs(g)
-        assert len(sccs) > 0
-
-        if len(sccs) == 1:
-            return compute_cycle_rank_rec(g)
-        else:
-            cycle_ranks = []
-            for scc in sccs:
-                cycle_ranks.append(compute_cycle_rank_rec(scc))
-            return max(cycle_ranks)
 
 
 if __name__ == "__main__":
@@ -65,3 +52,7 @@ if __name__ == "__main__":
         print("Computing Cycle Rank of graph:")
         print_graph(g)
         print()
+
+    cycle_rank = compute_cycle_rank(g)
+    assert cycle_rank >= 0, "Expecting a non-negative cycle rank"
+    print("Cycle rank is", cycle_rank)

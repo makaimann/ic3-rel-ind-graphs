@@ -12,7 +12,8 @@ class Graph:
         self.edges[u].append(v)
 
     def rmNode(self, u:str):
-        del self.edges[u]
+        if u in self.edges:
+            del self.edges[u]
         self.nodes.remove(u)
         for sinks in self.edges.values():
             try:
