@@ -68,7 +68,9 @@ def compute_cycle_rank_iter(g:Graph)->int:
             else:
                 sccs = get_scc_graphs(graph)
                 for scc in sccs:
-                    scc_children[id_].append(scc)
+                    if len(sccs) > 1:
+                        # if there's only one scc, then it's not a child
+                        scc_children[id_].append(scc)
                     scc_id = graph2id(scc)
                     process_stack.append(scc)
                     if is_acyclic(scc):
