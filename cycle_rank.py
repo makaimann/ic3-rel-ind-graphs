@@ -64,6 +64,7 @@ def compute_cycle_rank_iter(g:Graph)->int:
                 graph_cycle_rank[id_] = 0
             elif len(graph.nodes) == 1:
                 # cyclic graph with single node: n -> n
+                # TODO should this be 1 or 0: 1 feels right to me
                 graph_cycle_rank[id_] = 1
             else:
                 sccs = get_scc_graphs(graph)
@@ -91,7 +92,7 @@ def compute_cycle_rank_iter(g:Graph)->int:
             graph_cycle_rank[id_] = max([graph_cycle_rank[graph2id(gg)] for gg in scc_children[id_]])
         else:
             assert id_ in rm_node_children
-            graph_cycle_rank[id_] = 1+ min([graph_cycle_rank[graph2id(gg)] for gg in rm_node_children[id_]])
+            graph_cycle_rank[id_] = 1 + min([graph_cycle_rank[graph2id(gg)] for gg in rm_node_children[id_]])
 
     return graph_cycle_rank[id_]
 
