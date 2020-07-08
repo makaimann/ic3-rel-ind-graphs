@@ -21,11 +21,14 @@ def compute_cycle_rank(g:Graph)->int:
         scc_cycle_ranks = []
         for scc in sccs:
             rm_node_cycle_ranks = []
-            for n in scc.nodes:
-                scc_m_n = deepcopy(scc)
-                scc_m_n.rmNode(n)
-                rm_node_cycle_ranks.append(compute_cycle_rank(scc_m_n))
-            scc_cycle_ranks.append(1 + min(rm_node_cycle_ranks))
+            if len(scc.nodes) == 1:
+                scc_cycle_ranks.append(0)
+            else:
+                for n in scc.nodes:
+                    scc_m_n = deepcopy(scc)
+                    scc_m_n.rmNode(n)
+                    rm_node_cycle_ranks.append(compute_cycle_rank(scc_m_n))
+                scc_cycle_ranks.append(1 + min(rm_node_cycle_ranks))
         return max(scc_cycle_ranks)
 
 
