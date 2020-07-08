@@ -6,6 +6,7 @@ class Graph:
 
     def __init__(self, nodes:List[str])->None:
         self.nodes = list(nodes)
+        self.nodes.sort()
         self.edges = defaultdict(list)
 
     def addEdge(self, u:str, v:str):

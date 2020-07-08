@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
 import pickle
@@ -31,6 +32,68 @@ def compute_cycle_rank(g:Graph)->int:
                 scc_cycle_ranks.append(1 + min(rm_node_cycle_ranks))
         return max(scc_cycle_ranks)
 
+def compute_cycle_rank_iter(g:Graph)->int:
+    if is_acyclic(g):
+        return 0
+
+    def graph2id(graph:Graph)->str:
+        # graph keeps them sorted
+        return "_".join(graph.nodes)
+
+    process_stack = [g]
+    visited = set()
+    # fully identified by nodes in this algorithm
+    graph_lookup = {graph2id(g): g}
+    graph_cycle_rank = {}
+    # maps from sorted node string to the children of that graph
+    scc_children = defaultdict(list)
+    rm_node_children = defaultdict(list)
+    while process_stack:
+        graph = process_stack.pop()
+        id_ = graph2id(graph)
+        if id_ in graph_cycle_rank:
+            # cache hit
+            pass
+        elif id_ not in visited:
+            visited.add(id_)
+            process_stack.append(graph)
+
+            if not graph.nodes:
+                graph_cycle_rank[id_] = 0
+            elif is_acyclic(graph):
+                graph_cycle_rank[id_] = 0
+            elif len(graph.nodes) == 1:
+                # cyclic graph with single node: n -> n
+                graph_cycle_rank[id_] = 1
+            else:
+                sccs = get_scc_graphs(graph)
+                for scc in sccs:
+                    scc_children[id_].append(scc)
+                    scc_id = graph2id(scc)
+                    process_stack.append(scc)
+                    if is_acyclic(scc):
+                        graph_cycle_rank[scc_id] = 0
+                    else:
+                        for n in scc.nodes:
+                            scc_copy = deepcopy(scc)
+                            scc_copy.rmNode(n)
+                            scc_copy_id = graph2id(scc_copy)
+                            if not scc_copy.nodes:
+                                # can happen if graph was n -> n
+                                graph_cycle_rank[scc_copy_id] = 0
+                                continue
+                            assert scc_copy.nodes
+                            process_stack.append(scc_copy)
+                            rm_node_children[scc_id].append(scc_copy)
+        elif id_ in scc_children:
+            graph_cycle_rank[id_] = max([graph_cycle_rank[graph2id(gg)] for gg in scc_children[id_]])
+        else:
+            assert id_ in rm_node_children
+            graph_cycle_rank[id_] = 1+ min([graph_cycle_rank[graph2id(gg)] for gg in rm_node_children[id_]])
+
+    return graph_cycle_rank[id_]
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Read in pickle graph and compute cycle rank")
@@ -56,6 +119,6 @@ if __name__ == "__main__":
         print_graph(g)
         print()
 
-    cycle_rank = compute_cycle_rank(g)
+    cycle_rank = compute_cycle_rank_iter(g)
     assert cycle_rank >= 0, "Expecting a non-negative cycle rank"
     print("Cycle rank is", cycle_rank)
