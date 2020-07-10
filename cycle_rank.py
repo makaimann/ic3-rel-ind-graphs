@@ -42,8 +42,6 @@ def compute_cycle_rank_iter(g:Graph)->int:
 
     process_stack = [g]
     visited = set()
-    # fully identified by nodes in this algorithm
-    graph_lookup = {graph2id(g): g}
     graph_cycle_rank = {}
     # maps from sorted node string to the children of that graph
     scc_children = defaultdict(list)
