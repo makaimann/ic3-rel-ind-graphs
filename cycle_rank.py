@@ -42,6 +42,7 @@ def compute_cycle_rank_iter(g:Graph)->int:
 
     process_stack = [g]
     visited = set()
+    processed = set()
     graph_cycle_rank = {}
     # maps from sorted node string to the children of that graph
     scc_children = defaultdict(list)
@@ -87,10 +88,16 @@ def compute_cycle_rank_iter(g:Graph)->int:
                             process_stack.append(scc_copy)
                             rm_node_children[scc_id].append(scc_copy)
         elif id_ in scc_children:
+            assert id_ not in processed
             graph_cycle_rank[id_] = max([graph_cycle_rank[graph2id(gg)] for gg in scc_children[id_]])
+            del scc_children[id_]
+            processed.add(id_)
         else:
+            assert id_ not in processed
             assert id_ in rm_node_children
             graph_cycle_rank[id_] = 1 + min([graph_cycle_rank[graph2id(gg)] for gg in rm_node_children[id_]])
+            del rm_node_children[id_]
+            processed.add(id_)
 
     return graph_cycle_rank[id_]
 
