@@ -6,6 +6,15 @@ from pathlib import Path
 import pickle
 from graph import Graph
 from graph_utils import is_acyclic, get_scc_graphs, print_graph
+import sys
+
+
+cycle_rank_cache = {}
+
+
+def graph2id(graph:Graph)->str:
+    # graph keeps them sorted
+    return "_".join(graph.nodes)
 
 
 def compute_cycle_rank(g:Graph)->int:
@@ -22,8 +31,11 @@ def compute_cycle_rank(g:Graph)->int:
         scc_cycle_ranks = []
         for scc in sccs:
             rm_node_cycle_ranks = []
-            if len(scc.nodes) == 1:
+            if is_acyclic(scc):
                 scc_cycle_ranks.append(0)
+            elif len(scc.nodes) == 1:
+                # a single node with a cycle
+                scc_cycle_ranks.append(1)
             else:
                 for n in scc.nodes:
                     scc_m_n = deepcopy(scc)
@@ -32,13 +44,43 @@ def compute_cycle_rank(g:Graph)->int:
                 scc_cycle_ranks.append(1 + min(rm_node_cycle_ranks))
         return max(scc_cycle_ranks)
 
+def compute_cycle_rank_caching(g:Graph)->int:
+    res = None
+    id_ = graph2id(g)
+    if id_ in cycle_rank_cache:
+        return cycle_rank_cache[id_]
+
+    if not g.nodes:
+        res = 0
+    elif is_acyclic(g):
+        res = 0
+    else:
+        sccs = get_scc_graphs(g)
+        assert len(sccs) > 0
+
+        scc_cycle_ranks = []
+        for scc in sccs:
+            rm_node_cycle_ranks = []
+            if is_acyclic(scc):
+                scc_cycle_ranks.append(0)
+            elif len(scc.nodes) == 1:
+                # a single node with a cycle
+                scc_cycle_ranks.append(1)
+            else:
+                for n in scc.nodes:
+                    scc_m_n = deepcopy(scc)
+                    scc_m_n.rmNode(n)
+                    rm_node_cycle_ranks.append(compute_cycle_rank_caching(scc_m_n))
+                scc_cycle_ranks.append(1 + min(rm_node_cycle_ranks))
+        res = max(scc_cycle_ranks)
+
+    assert res is not None
+    cycle_rank_cache[id_] = res
+    return res
+
 def compute_cycle_rank_iter(g:Graph)->int:
     if is_acyclic(g):
         return 0
-
-    def graph2id(graph:Graph)->str:
-        # graph keeps them sorted
-        return "_".join(graph.nodes)
 
     process_stack = [g]
     visited = set()
@@ -104,6 +146,7 @@ def compute_cycle_rank_iter(g:Graph)->int:
 
 
 if __name__ == "__main__":
+    sys.setrecursionlimit(5000)
     parser = argparse.ArgumentParser("Read in pickle graph and compute cycle rank")
     parser.add_argument('input_file', help='Pickled list of edges (.pkl)')
     parser.add_argument('-p', '--print-graph', action='store_true', help='Print the graph')
@@ -127,6 +170,6 @@ if __name__ == "__main__":
         print_graph(g)
         print()
 
-    cycle_rank = compute_cycle_rank_iter(g)
+    cycle_rank = compute_cycle_rank_caching(g)
     assert cycle_rank >= 0, "Expecting a non-negative cycle rank"
     print("Cycle rank is", cycle_rank)
