@@ -61,7 +61,7 @@ def gen_dot(g:Graph, node_mapping:Dict[int, Any]=dict())->graphviz.Digraph:
 #     print(sccs)
 
 if __name__ == "__main__":
-    proc_options = ['list', 'num', 'hist', 'bfs', 'dot', 'scc-dot']
+    proc_options = ['list', 'num', 'hist', 'bfs', 'dot', 'scc-dot', 'max-out-degree']
     parser = argparse.ArgumentParser(description="Find Strongly Connected Components")
     parser.add_argument('input_file', help='Pickled list of edges (.pkl), or string of hyperedges that can be evaluated (.out)')
     parser.add_argument('--proc', metavar="<PROC_TYPE>", choices=proc_options, default='num',
@@ -185,3 +185,5 @@ if __name__ == "__main__":
         scc_graph = gen_scc_graph(g, get_sccs(g))
         dot = gen_dot(scc_graph)
         dot.render(str(dotfilepath))
+    elif proc == 'max-out-degree':
+        print('max out degree is', max([len(sinks) for sinks in g.edges.values()]))
