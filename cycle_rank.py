@@ -147,7 +147,7 @@ def compute_cycle_rank_iter(g:Graph)->int:
 
 if __name__ == "__main__":
     sys.setrecursionlimit(5000)
-    parser = argparse.ArgumentParser("Read in pickle graph and compute cycle rank")
+    parser = argparse.ArgumentParser("Read in pickle graph and compute cycle rank after removing self-loops for nodes")
     parser.add_argument('input_file', help='Pickled list of edges (.pkl)')
     parser.add_argument('-p', '--print-graph', action='store_true', help='Print the graph')
 
@@ -162,8 +162,11 @@ if __name__ == "__main__":
         nodes.add(n1)
         nodes.add(n2)
     g = Graph(list(nodes))
+
     for n1, n2 in edges:
-        g.addEdge(n1, n2)
+        # skip self loops -- not interesting for induction graphs
+        if n1 != n2:
+            g.addEdge(n1, n2)
 
     if args.print_graph:
         print("Computing Cycle Rank of graph:")
