@@ -17,16 +17,27 @@ if __name__ == "__main__":
 
     init  = And([c._expr for c in read_cnf(args.init)])
     trans = And([c._expr for c in read_cnf(args.trans)])
-    inv   = And([c._expr for c in read_cnf(args.inv)])
+    invl  = read_cnf(args.inv)
+    assert invl
+    prop  = invl[0]
+    inv   = And([c._expr for c in invl])
 
     prime_mapping = []
     for line in open(file_prime, "r").read().splitlines():
         k, v = line.split()
         prime_mapping.append((get_lit(k), get_lit(v)))
 
+
+    s = Solver()
+    # IMPORTANT invariant of IC3ref
+    # -1 (actually stored as -0 internally)
+    # just used as "true"
+    s.add(get_lit('-1'))
+
+    init = And(init, prop._expr)
+
     print("init -> inv...", end='')
     query = And(init, Not(inv))
-    s = Solver()
     s.push()
     s.add(query)
     print('OK' if s.check() == unsat else 'FAIL')
