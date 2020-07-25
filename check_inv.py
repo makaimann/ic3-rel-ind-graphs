@@ -19,7 +19,7 @@ if __name__ == "__main__":
     trans = And([c._expr for c in read_cnf(args.trans)])
     invl  = read_cnf(args.inv)
     assert invl
-    prop  = invl[0]
+    prop  = invl[0]._expr
     inv   = And([c._expr for c in invl])
 
     prime_mapping = []
@@ -34,7 +34,9 @@ if __name__ == "__main__":
     # just used as "true"
     s.add(get_lit('-1'))
 
-    init = And(init, prop._expr)
+    # add property to initial states
+    # IC3ref omits this for some reason
+    init = And(init, prop)
 
     print("init -> inv...", end='')
     query = And(init, Not(inv))
@@ -46,5 +48,11 @@ if __name__ == "__main__":
     s.push()
     print('inv /\ T |= inv...', end='')
     s.add(And(inv, trans, Not(substitute(inv, prime_mapping))))
+    print('OK' if s.check() == unsat else 'FAIL')
+    s.pop()
+
+    s.push()
+    print('inv -> prop...', end='')
+    s.add(Not(Implies(inv, prop)))
     print('OK' if s.check() == unsat else 'FAIL')
     s.pop()
