@@ -7,7 +7,7 @@ for aig in `ls ./hwmcc17/*`; do
     filename=$(basename -- $aig)
     filename="${filename%.*}"
     echo "Running IC3Ref on $aig"
-    res=`timeout $TO ./IC3 -v --trans=trans.cnf --inv=inv.cnf < $aig | tail -c 2`
+    res=`timeout $TO ./IC3 -v --dump=${filename} < $aig | tail -c 2`
     if [ -z "${res// }" ]; then
         echo "timed out"
     elif [ "$res" -eq 0 ]; then
