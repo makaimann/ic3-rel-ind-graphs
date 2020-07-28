@@ -21,8 +21,13 @@ To run on all hwmcc17 benchmarks with a timeout (set at top of script), run `./t
 
 To run individually, do the following:
 ```
-./IC3 --trans=<trans_filename>.cnf --inv=<inv_filename>.cnf < <benchmark>.aig
-./gen_graph.py -t <trans_filename>.cnf -i <inv_filename>.cnf -ip <inv_filename>-primed.cnf -o <output_name>
+./IC3 --dump=<base name with no extension> < <benchmark>.aig
+./gen_graph.py -t <dumped filename>-trans.cnf -i <dumped filename>-inv.cnf -ip <dumped filename>-inv-primed.cnf -o <output_name>
 ```
 
 This will generate a graph `<output_name>.dot`.
+
+You can also check that the dumped invariant is an inductive invariant with the following command:
+```
+./check_inv.py --init ./<dumpname>-init.cnf --trans ./<dumpname>-trans.cnf --inv ./<dumpname>-inv.cnf --primes ./<dumpname>-mapping.txt
+```
