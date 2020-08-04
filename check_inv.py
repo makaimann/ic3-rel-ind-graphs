@@ -1,9 +1,29 @@
 #!/usr/bin/env python3
 import argparse
-from z3 import Solver, Not, And, Or, sat, unsat, Implies, Bool, substitute
+from z3 import Solver, Not, And, Or, sat, unsat, Implies, Bool, substitute, ExprRef
 
 from cnf_utils import read_cnf, get_lit
 
+from typing import Set
+
+def get_free_vars(e: ExprRef) -> Set[ExprRef]:
+    free_vars = set()
+    to_visit = [e]
+    visited  = set()
+    while to_visit:
+        t = to_visit.pop()
+
+        if t not in visited:
+            visited.add(t)
+            to_visit.append(t)
+            for c in t.children():
+                to_visit.append(c)
+
+        elif not t.children():
+            # assuming no children means it's a variable
+            free_vars.add(t)
+
+    return free_vars
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Check invariant on a transition system")
@@ -56,3 +76,7 @@ if __name__ == "__main__":
     s.add(Not(Implies(inv, prop)))
     print('OK' if s.check() == unsat else 'FAIL')
     s.pop()
+
+    free_vars = get_free_vars(inv)
+    prime_mapping_ids = set(v0.get_id() for v0, v1 in prime_mapping)
+    assert all(fv.get_id() in prime_mapping_ids for fv in free_vars), "expecting all current state variables"
