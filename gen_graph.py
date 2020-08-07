@@ -158,11 +158,9 @@ def main():
         for inv in invs:
             pinv = inv2pinv[inv]
             npinv = Not(pinv._expr)
-            if check_single_inv_induction(ind_solver, inv._expr, npinv):
-                invdeps = [inv, clause_trans]
-            else:
-                invdeps = get_deps(constraints, npinv)
-            invdeps.remove(clause_trans)
+            invdeps = get_deps(constraints, npinv)
+            if clause_trans in invdeps:
+                invdeps.remove(clause_trans)
             for d in invdeps:
                 edges.append((str(inv._id), str(d._id)))
     else:
@@ -190,13 +188,16 @@ def main():
             else:
                 visited.add(inv)
                 npinv = Not(pinv._expr)
-                if check_single_inv_induction(ind_solver, inv._expr, npinv):
-                    invdeps = [inv]
-                else:
-                    invdeps = get_deps(constraints, npinv)
+                invdeps = get_deps(constraints, npinv)
     #            print("invdeps", [i._id for i in invdeps])
-                if clause_trans in invdeps:
-                    invdeps.remove(clause_trans)
+                try:
+                    invdeps.remove(clause_trans)  # trans is implicit
+                except:
+                    pass
+                try:
+                    invdeps.remove(inv) # don't have self loops
+                except:
+                    pass
                 for d in invdeps:
                     if d == prop:
                         strd = 'Prop'
