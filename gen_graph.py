@@ -231,6 +231,8 @@ def main():
     # dot.render('./%s.dot'%outname)
 
     print('\n==================== completed ====================')
+    # print sat so it's not counted as an error on the cluster
+    print("sat")
 
 
 if __name__ == "__main__":
