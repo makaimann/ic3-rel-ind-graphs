@@ -123,6 +123,12 @@ def main():
     gen_pickle = args.gen_pickle
     noprop = args.noprop
 
+    # label each clause in the invariant with its position
+    # zero is the property
+    labels = dict()
+    for i, clause in enumerate(inv_cand):
+        labels[clause._id] = i
+
     # the first invariant is assumed to be the property
     # we don't want to remove that, so take it out now and add it back afterwards
     prop = inv_cand[0]
@@ -176,9 +182,10 @@ def main():
             pinv = inv2pinv[inv]
 
             if inv == prop:
-                strinv = 'Prop'
+                assert labels[inv._id] == 0
+                strinv = '0 (Prop)'
             else:
-                strinv = str(inv._id)
+                strinv = str(labels[inv._id])
 
     #        print('visiting', inv._id, pinv._id)
 
@@ -200,9 +207,10 @@ def main():
                     pass
                 for d in invdeps:
                     if d == prop:
-                        strd = 'Prop'
+                        assert labels[d._id] == 0
+                        strd = '0 Prop'
                     else:
-                        strd = str(d._id)
+                        strd = str(labels[d._id])
                     edges.append((strinv, strd))
                     if d not in visited:
                         to_visit.appendleft(d)

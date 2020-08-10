@@ -186,4 +186,5 @@ if __name__ == "__main__":
         dot = gen_dot(scc_graph)
         dot.render(str(dotfilepath))
     elif proc == 'max-out-degree':
-        print('max out degree is', max([len(sinks) for sinks in g.edges.values()]))
+        max_out_degree=max([0] + [len(sinks) for sinks in g.edges.values()])
+        print(f'max out degree: {max_out_degree:05}')
